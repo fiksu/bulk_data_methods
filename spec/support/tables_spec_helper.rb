@@ -31,14 +31,11 @@ module TablesSpecHelper
           company_id       integer not null,
           integer_field    integer not null default 1
       );
-
-      create schema employees_partitions;
     SQL
   end
 
   def drop_tables
     ActiveRecord::Base.connection.execute <<-SQL
-      drop schema employees_partitions cascade;
       drop table employees;
       drop table companies;
     SQL

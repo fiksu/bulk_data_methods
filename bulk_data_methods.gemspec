@@ -5,7 +5,7 @@ Gem::Specification.new do |s|
   s.name         = "bulk_data_methods"
   s.version      = BulkDataMethods::VERSION
   s.license      = 'New BSD License'
-  s.date         = '2012-09-21'
+  s.date         = '2013-04-16'
   s.summary      = 'MixIn used to extend ActiveRecord::Base classes implementing bulk insert and update operations through {#create_many} and {#update_many}.'
   s.description  = 'MixIn used to extend ActiveRecord::Base classes implementing bulk insert and update operations through {#create_many} and {#update_many}.'
   s.authors      = ["Keith Gabryelski"]
@@ -16,5 +16,5 @@ Gem::Specification.new do |s|
   s.homepage     = 'http://github.com/fiksu/bulk_data_methods'
   s.add_dependency "pg"
   s.add_dependency "rails", '>= 3.0.0'
-  s.add_dependency 'rspec-rails'
+  s.add_dependency 'rspec-rails', '>= 2.12.0'
 end
