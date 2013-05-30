@@ -346,15 +346,18 @@ describe "BulkMethodsMixin" do
       end
     end # when update method with options :set_array equal 'salary = datatable.salary'
 
-    context "when update method with options :where" do
+    context "when update method with options :where_constraint" do
       it "updates only name column, where salary equal input values" do
         Employee.update_many([{ :id => 1, :name => 'Elvis', :salary => 12 },
-                              { :id => 2, :name => 'Freddi',:salary => 22}],
-                              { :where => '"#{table_name}.salary = datatable.salary"' })
+                              { :id => 2, :name => 'Freddi',:salary => 22},
+                              { :id => 3, :name => 'Robert', :salary => 13}],
+                              { :where_constraint => '"#{table_name}.salary = datatable.salary AND datatable.salary < 13"' })
         Employee.find(1).name.should_not == "Elvis"
         Employee.find(1).salary.should == 3
         Employee.find(2).name.should_not == "Freddi"
         Employee.find(2).salary.should == 3
+        Employee.find(3).name.should_not == "Robert"
+        Employee.find(3).salary.should == 3
       end
     end # when update method with options :where
 

@@ -1,0 +1,7 @@
+language: ruby
+bundler_args: --without debug
+rvm:
+  - 1.9.3
+before_script:
+  - cp spec/dummy/config/database-sample.yml spec/dummy/config/database.yml; createdb bulk_data_methods_test
+script: bundle exec rake spec

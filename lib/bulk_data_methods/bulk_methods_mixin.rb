@@ -113,12 +113,14 @@ module BulkMethodsMixin
   # @overload update_many(rows = [], options = {})
   #   @param [Array<Hash>] rows ([]) data to be updated
   #   @option options [String] :set_array (built from first row passed in) the set clause
-  #   @option options [String] :where ('"#{table_name}.id = datatable.id"') the where clause
+  #   @option options [String] :where_datatable ('"#{table_name}.id = datatable.id"') the where clause specifying how to join the datatable against the real table
+  #   @option options [String] :where_constraint the rest of the where clause that limits what rows of the table get updated
   #
   # @overload update_many(rows = {}, options = {})
   #   @param [Hash<Hash, Hash>] rows ({}) data to be updated
   #   @option options [String] :set_array (built from the values in the first key/value pair of `rows`) the set clause
-  #   @option options [String] :where (built from the keys in the first key/value pair of `rows`) the where clause
+  #   @option options [String] :where_datatable ('"#{table_name}.id = datatable.id"') the where clause specifying how to join the datatable against the real table
+  #   @option options [String] :where_constraint the rest of the where clause that limits what rows of the table get updated
   #
   # @example using "set_array" to add the value of "salary" to the specific employee's salary the default where clause matches IDs so, it works here.
   #   rows = [
@@ -129,7 +131,7 @@ module BulkMethodsMixin
   #   options = { :set_array => '"salary = datatable.salary"' }
   #   Employee.update_many(rows, options)
   #
-  # @example using where clause to match salary.
+  # @example using where_datatable clause to match salary.
   #   rows = [
   #     { :id => 1, :salary => 1000, :company_id => 10 },
   #     { :id => 10, :salary => 2000, :company_id => 12 },
@@ -137,7 +139,19 @@ module BulkMethodsMixin
   #   ]
   #   options = {
   #     :set_array => '"company_id = datatable.company_id"',
-  #     :where => '"#{table_name}.salary = datatable.salary"'
+  #     :where_datatable => '"#{table_name}.salary = datatable.salary"'
+  #   }
+  #   Employee.update_many(rows, options)
+  #
+  # @example using where_constraint clause to only update salary for active employees
+  #   rows = [
+  #     { :id => 1, :salary => 1000, :company_id => 10 },
+  #     { :id => 10, :salary => 2000, :company_id => 12 },
+  #     { :id => 23, :salary => 2500, :company_id => 5 }
+  #   ]
+  #   options = {
+  #     :set_array => '"company_id = datatable.company_id"',
+  #     :where_constraint => '"#{table_name}.active = true"'
   #   }
   #   Employee.update_many(rows, options)
   #
@@ -155,7 +169,7 @@ module BulkMethodsMixin
   def update_many(rows, options = {})
     return [] if rows.blank?
     if rows.is_a?(Hash)
-      options[:where] = '"' + rows.keys[0].keys.map{|key| '#{table_name}.' + "#{key} = datatable.#{key}"}.join(' and ') + '"'
+      options[:where_datatable] = '"' + rows.keys[0].keys.map{|key| '#{table_name}.' + "#{key} = datatable.#{key}"}.join(' and ') + '"'
       options[:set_array] = '"' + rows.values[0].keys.map{|key| "#{key} = datatable.#{key}"}.join(',') + '"' unless options[:set_array]
       r = []
       rows.each do |key,value|
@@ -180,8 +194,11 @@ module BulkMethodsMixin
       end
       returning_clause = "\" returning #{returning_list}\""
     end
-    options[:where] = '"#{table_name}.id = datatable.id"' unless options[:where]
-
+    where_clause = options[:where_datatable] || '"#{table_name}.id = datatable.id"'
+    where_constraint = ""
+    if options[:where_constraint]
+      where_constraint = " AND #{eval(options[:where_constraint])}"
+    end
     returning = []
 
     rows.group_by do |row|
@@ -217,7 +234,8 @@ module BulkMethodsMixin
             #{datatable}
           ) as datatable
           where
-            #{eval(options[:where])}
+            #{eval(where_clause)}
+            #{where_constraint}
           #{eval(returning_clause)}
         SQL
         returning += find_by_sql(sql_update_string)
