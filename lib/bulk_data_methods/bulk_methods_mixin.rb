@@ -197,7 +197,7 @@ module BulkMethodsMixin
     where_clause = options[:where_datatable] || '"#{table_name}.id = datatable.id"'
     where_constraint = ""
     if options[:where_constraint]
-      where_constraint = " AND #{eval(options[:where_constraint])}"
+      where_constraint = '" AND #{eval(options[:where_constraint])}"'
     end
     returning = []
 
@@ -235,7 +235,7 @@ module BulkMethodsMixin
           ) as datatable
           where
             #{eval(where_clause)}
-            #{where_constraint}
+            #{eval(where_constraint)}
           #{eval(returning_clause)}
         SQL
         returning += find_by_sql(sql_update_string)
