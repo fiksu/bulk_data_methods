@@ -22,3 +22,5 @@ spec/dummy/tmp/
 spec/dummy/.sass-cache
 spec/dummy/config/database.yml
 spec/dummy/db/schema.rb
+
+Gemfile.lock
