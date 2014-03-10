@@ -51,6 +51,7 @@ module BulkMethodsMixin
     return [] if rows.blank?
     options[:slice_size] = 1000 unless options.has_key?(:slice_size)
     options[:check_consistency] = true unless options.has_key?(:check_consistency)
+    options[:add_created_at] = true unless options.has_key?(:add_created_at)
     returning_clause = ""
     if options[:returning]
       if options[:returning].is_a? Array
@@ -75,7 +76,9 @@ module BulkMethodsMixin
       row[:id] ||= row_ids.shift
     end.each do |row|
       # set :created_at if need be
-      row[:created_at] ||= created_at_value
+      if options[:add_created_at]
+        row[:created_at] ||= created_at_value
+      end
     end.group_by do |row|
       respond_to?(:partition_table_name) ? partition_table_name(*partition_key_values(row)) : table_name
     end.each do |table_name, rows_for_table|
