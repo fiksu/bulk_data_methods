@@ -89,8 +89,8 @@ describe "BulkMethodsMixin" do
         Employee.create_many([{ :name => 'Keith', :company_id => 2 },
                               { :name => 'Mike', :company_id => 3 },
                               { :name => 'Alex', :company_id => 1 }])
-        Employee.all.each{ |r| r.created_at.between?(Time.now - 3.minute, Time.now + 3.minute) }.
-            should be_true
+        Employee.all.map { |r| r.created_at.between?(Time.now - 3.minute, Time.now + 3.minute) }.
+            should == [true, true, true]
       end
     end # when try to create records without the given created_at
 

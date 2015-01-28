@@ -15,6 +15,6 @@ Gem::Specification.new do |s|
   s.require_path = 'lib'
   s.homepage     = 'http://github.com/fiksu/bulk_data_methods'
   s.add_dependency "pg"
-  s.add_dependency "rails", '>= 3.0.0'
+  s.add_dependency "rails", '< 4.0'
   s.add_dependency 'rspec-rails'
 end
