@@ -6,6 +6,8 @@ cache: bundler
 
 rvm:
   - 1.9.3
+  - 2.1.5
+
 before_script:
   - cp spec/dummy/config/database-sample.yml spec/dummy/config/database.yml; createdb bulk_data_methods_test
 script: bundle exec rake spec
