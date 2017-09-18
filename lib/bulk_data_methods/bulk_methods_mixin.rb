@@ -45,12 +45,14 @@ module BulkMethodsMixin
   # @option options [Integer] :slice_size (1000) how many records will be created in a single SQL query
   # @option options [Boolean] :check_consitency (true) ensure some modicum of sanity on the incoming dataset, specifically: does each row define the same set of key/value pairs
   # @option options [Array or String] :returning (nil) list of fields to return.
+  # @option options [Boolean] :disable_id_generation (false) disable id automatic generation (can be effective when id is generating automatically in table)
   # @return [Array<Hash>] rows returned from DB as option[:returning] requests
   # @raise [BulkUploadDataInconsistent] raised when key/value pairs between rows are inconsistent (check disabled with option :check_consistency)
   def create_many(rows, options = {})
     return [] if rows.blank?
     options[:slice_size] = 1000 unless options.has_key?(:slice_size)
     options[:check_consistency] = true unless options.has_key?(:check_consistency)
+    options[:disable_id_generation] = false unless options.has_key?(:disable_id_generation)
     returning_clause = ""
     if options[:returning]
       if options[:returning].is_a? Array
@@ -68,7 +70,8 @@ module BulkMethodsMixin
     column_names = self.columns.map(&:name)
     has_id = column_names.include?("id")
     has_created_at = column_names.include?("created_at")
-    if has_id
+    need_id_generation = !options[:disable_id_generation] && has_id
+    if need_id_generation
       num_sequences_needed = rows.reject{|r| r[:id].present?}.length
       if num_sequences_needed > 0
         row_ids = connection.next_sequence_values(sequence_name, num_sequences_needed)
@@ -76,7 +79,7 @@ module BulkMethodsMixin
     end
     rows.each do |row|
       # set the primary key if it needs to be set
-      if has_id
+      if need_id_generation
         row[:id] ||= row_ids.shift
       end
     end.each do |row|
